@@ -1,4 +1,7 @@
 CMakeLists.txt.user
+.vscode/
+dataset/
+rgbd_benchmark_tools/
 Examples/Monocular/mono_euroc
 Examples/Monocular/mono_kitti
 Examples/Monocular/mono_tum
