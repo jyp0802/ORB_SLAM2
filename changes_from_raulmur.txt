@@ -15,6 +15,7 @@ FOR ROS
 2. Correct some files
 	1. Add Boost dependency - https://github.com/raulmur/ORB_SLAM2/pull/507
 	2. Publish tf for rgbd - https://github.com/raulmur/ORB_SLAM2/pull/102
+		- new link https://github.com/raulmur/ORB_SLAM2/pull/102#issuecomment-298233226
 
 3. Make RGBD.yaml file in Examples/RGB-D/ (copy TUM1.yaml) & Setup topic names for RGB-D camera
 	https://impulsiverobotics.com/2018/04/ros-enabled-omnidirectional-robot/

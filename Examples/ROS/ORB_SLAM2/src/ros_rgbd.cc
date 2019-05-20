@@ -131,13 +131,12 @@ void ImageGrabber::GrabRGBD(const sensor_msgs::ImageConstPtr& msgRGB,const senso
     world_lh = world_lh * translation;
     pose_prev = pose.clone();
 
+    tf::Matrix3x3 tf3d;
+	tf3d.setValue(pose.at<float>(0,0), pose.at<float>(0,1), pose.at<float>(0,2),
+			pose.at<float>(1,0), pose.at<float>(1,1), pose.at<float>(1,2),
+			pose.at<float>(2,0), pose.at<float>(2,1), pose.at<float>(2,2));
 
-    /* transform into global right handed coordinate system, publish in ROS*/
-    tf::Matrix3x3 cameraRotation_rh(  - world_lh.at<float>(0,0),   world_lh.at<float>(0,1),   world_lh.at<float>(0,2),
-                                  - world_lh.at<float>(1,0),   world_lh.at<float>(1,1),   world_lh.at<float>(1,2),
-                                    world_lh.at<float>(2,0), - world_lh.at<float>(2,1), - world_lh.at<float>(2,2));
-
-    tf::Vector3 cameraTranslation_rh( world_lh.at<float>(0,3),world_lh.at<float>(1,3), - world_lh.at<float>(2,3) );
+	tf::Vector3 cameraTranslation_rh( world_lh.at<float>(0,3),world_lh.at<float>(1,3), - world_lh.at<float>(2,3) );
 
     //rotate 270deg about x and 270deg about x to get ENU: x forward, y left, z up
     const tf::Matrix3x3 rotation270degXZ(   0, 1, 0,
@@ -146,10 +145,22 @@ void ImageGrabber::GrabRGBD(const sensor_msgs::ImageConstPtr& msgRGB,const senso
 
     static tf::TransformBroadcaster br;
 
-    tf::Matrix3x3 globalRotation_rh = cameraRotation_rh * rotation270degXZ;
-    tf::Vector3 globalTranslation_rh = cameraTranslation_rh * rotation270degXZ;
-    tf::Transform transform = tf::Transform(globalRotation_rh, globalTranslation_rh);
-    br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "camera_link", "camera_pose"));
+    tf::Matrix3x3 globalRotation_rh = tf3d;
+	tf::Vector3 globalTranslation_rh = cameraTranslation_rh * rotation270degXZ;
+
+	tf::Quaternion tfqt;
+	globalRotation_rh.getRotation(tfqt);
+
+	double aux = tfqt[0];
+	tfqt[0]=-tfqt[2];
+	tfqt[2]=tfqt[1];
+	tfqt[1]=aux;
+
+	tf::Transform transform;
+	transform.setOrigin(globalTranslation_rh);
+	transform.setRotation(tfqt);
+
+    br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world", "camera_pose"));
 }
 
 
